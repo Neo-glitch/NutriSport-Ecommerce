@@ -9,14 +9,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.neo.auth.component.GoogleButton
 import com.neo.shared.Alpha
 import com.neo.shared.BebasNeueFont
 import com.neo.shared.FontSize
+import com.neo.shared.Surface
 import com.neo.shared.SurfaceBrand
 import com.neo.shared.SurfaceError
 import com.neo.shared.TextPrimary
@@ -27,9 +34,14 @@ import rememberMessageBarState
 @Composable
 fun AuthScreen() {
     val messageBarState = rememberMessageBarState()
-    Scaffold { paddingValues ->
+    var loading by remember { mutableStateOf(false) }
+    Scaffold { padding ->
         ContentWithMessageBar(
-            modifier = Modifier.padding(paddingValues),
+            contentBackgroundColor = Surface,
+            modifier = Modifier.padding(
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding()
+            ),
             messageBarState = messageBarState,
             errorMaxLines = 2,
             errorContainerColor = SurfaceError,
@@ -39,6 +51,7 @@ fun AuthScreen() {
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
+                    .padding(all = 24.dp)
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
@@ -64,12 +77,34 @@ fun AuthScreen() {
                     )
                 }
 
-                GoogleButton(
-                    loading = false,
-                    onClicked = {
-
+                GoogleButtonUiContainerFirebase(
+                    linkAccount = false,
+                    onResult = { result ->
+                        result.onSuccess { user ->
+                            messageBarState.addSuccess("Signed in successfully")
+                            loading = false
+                        }.onFailure { error ->
+                            if (error.message?.contains("A network error") == true) {
+                                messageBarState.addError("Internet connection unavailable")
+                            } else if (error.message?.contains("IdToken is null") == true) {
+                                messageBarState.addError("Sign in Cancelled")
+                            } else {
+                                messageBarState.addError(error.message.toString())
+                            }
+                            loading = false
+                        }
                     }
-                )
+                ) {
+                    GoogleButton(
+                        loading = loading,
+                        onClicked = {
+                            // to begin sign in process with google
+                            this@GoogleButtonUiContainerFirebase.onClick()
+                            loading = true
+                        }
+                    )
+                }
+
             }
         }
     }

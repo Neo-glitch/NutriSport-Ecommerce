@@ -44,6 +44,10 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.messagebar.kmp)
+            implementation(libs.auth.kmp)
+            implementation(libs.auth.firebase.kmp)
+            implementation(project(path = ":shared"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -68,11 +72,5 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-}
-
-// exposes resource to other modules
-compose.resources {
-    publicResClass = true
-    generateResClass = auto
 }
 

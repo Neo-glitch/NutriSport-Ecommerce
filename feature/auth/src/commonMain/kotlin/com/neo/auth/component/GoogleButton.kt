@@ -31,9 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.neo.shared.FontSize
-import com.neo.shared.Gray
-import com.neo.shared.GrayDarker
 import com.neo.shared.IconSecondary
+import com.neo.shared.SurfaceDarker
+import com.neo.shared.SurfaceLighter
 import com.neo.shared.TextPrimary
 import nutrisport.shared.generated.resources.Res
 import nutrisport.shared.generated.resources.google_logo
@@ -48,8 +48,8 @@ fun GoogleButton(
     secondaryText: String = "Please wait...",
     icon: DrawableResource = Res.drawable.google_logo,
     shape: Shape = RoundedCornerShape(size = 99.dp),
-    backgroundColor: Color = Gray,
-    borderColor: Color = GrayDarker,
+    backgroundColor: Color = SurfaceLighter,
+    borderColor: Color = SurfaceDarker,
     progressIndicatorColor: Color = IconSecondary,
     onClicked: () -> Unit
 ) {

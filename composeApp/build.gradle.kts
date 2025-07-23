@@ -1,12 +1,24 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.google.services)
+}
+
+// ✅ Load secrets from local.properties
+val localProps = Properties()
+val localFile = rootProject.file("local.properties")
+if (localFile.exists()) {
+    localFile.inputStream().use { localProps.load(it) }
+    localProps.forEach { key, value -> project.ext.set(key.toString(), value) }
 }
 
 kotlin {
@@ -44,6 +56,10 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.auth.kmp)
+            implementation(libs.auth.firebase.kmp)
+            implementation(project(path = ":navigation"))
+            implementation(project(path = ":shared"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -80,5 +96,20 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+
+buildkonfig {
+    packageName = "com.neo.nutrisport"
+
+    var webClientId = "WEB_CLIENT_ID"
+
+    defaultConfigs {
+        buildConfigField(
+            type = STRING,
+            name = webClientId,
+            value = project.findProperty(webClientId) as? String ?: ""
+        )
+    }
 }
 
