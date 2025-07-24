@@ -30,11 +30,6 @@ kotlin {
 
     sourceSets {
 
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.splash.screen)
-        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -48,9 +43,6 @@ kotlin {
             implementation(libs.auth.kmp)
             implementation(libs.auth.firebase.kmp)
             implementation(project(path = ":shared"))
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.splash.screen)
+            implementation(libs.koin.android)  // to be able to pass android context to koin
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -60,6 +61,7 @@ kotlin {
             implementation(libs.auth.firebase.kmp)
             implementation(project(path = ":navigation"))
             implementation(project(path = ":shared"))
+            implementation(project(path = ":di"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
