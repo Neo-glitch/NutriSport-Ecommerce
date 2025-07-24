@@ -29,10 +29,12 @@ import com.neo.shared.SurfaceError
 import com.neo.shared.TextPrimary
 import com.neo.shared.TextSecondary
 import com.neo.shared.TextWhite
+import org.koin.compose.viewmodel.koinViewModel
 import rememberMessageBarState
 
 @Composable
 fun AuthScreen() {
+    val viewModel = koinViewModel<AuthViewModel>()
     val messageBarState = rememberMessageBarState()
     var loading by remember { mutableStateOf(false) }
     Scaffold { padding ->
@@ -81,7 +83,15 @@ fun AuthScreen() {
                     linkAccount = false,
                     onResult = { result ->
                         result.onSuccess { user ->
-                            messageBarState.addSuccess("Signed in successfully")
+                            viewModel.createCustomer(
+                                user = user,
+                                onSuccess = {
+                                    messageBarState.addSuccess("Authentication successful!")
+                                },
+                                onError = { error ->
+                                    messageBarState.addError(error)
+                                }
+                            )
                             loading = false
                         }.onFailure { error ->
                             if (error.message?.contains("A network error") == true) {
