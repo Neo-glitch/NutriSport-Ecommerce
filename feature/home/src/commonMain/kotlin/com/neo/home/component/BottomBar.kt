@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.neo.home.BottomBarDestination
+import com.neo.home.domain.BottomBarDestination
 import com.neo.shared.IconPrimary
 import com.neo.shared.IconSecondary
 import com.neo.shared.SurfaceLighter

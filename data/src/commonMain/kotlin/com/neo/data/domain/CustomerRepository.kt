@@ -3,6 +3,7 @@ package com.neo.data.domain
 import dev.gitlive.firebase.auth.FirebaseUser
 import com.neo.shared.domain.CartItem
 import com.neo.shared.domain.Customer
+import com.neo.shared.util.RequestState
 import kotlinx.coroutines.flow.Flow
 
 interface CustomerRepository {
@@ -44,5 +45,5 @@ interface CustomerRepository {
 //        onError: (String) -> Unit
 //    )
 //
-//    suspend fun signOut(): RequestState<Unit>
+    suspend fun signOut(): RequestState<Unit>
 }

@@ -2,10 +2,12 @@ package com.neo.data.domain
 
 import com.neo.shared.domain.CartItem
 import com.neo.shared.domain.Customer
+import com.neo.shared.util.RequestState
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
+import kotlin.coroutines.cancellation.CancellationException
 
 class CustomerRepositoryImpl: CustomerRepository {
     override fun getCurrentUserId(): String? {
@@ -41,10 +43,22 @@ class CustomerRepositoryImpl: CustomerRepository {
                 onError("User is not available.")
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             onError("Error while creating a customer: ${e.message}")
         }
     }
-//
+
+    override suspend fun signOut(): RequestState<Unit> {
+        return try {
+            Firebase.auth.signOut()
+            RequestState.Success(data = Unit)
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            RequestState.Error("Error while signing out: ${e.message}")
+        }
+    }
+
+    //
 //    override suspend fun updateCustomer(
 //        customer: Customer,
 //        onSuccess: () -> Unit,

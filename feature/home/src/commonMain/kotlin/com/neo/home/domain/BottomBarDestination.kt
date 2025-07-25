@@ -1,4 +1,4 @@
-package com.neo.home
+package com.neo.home.domain
 
 import com.neo.shared.navigation.Screen
 import nutrisport.shared.generated.resources.Res
