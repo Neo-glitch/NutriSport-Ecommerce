@@ -6,7 +6,7 @@ import com.neo.shared.domain.Customer
 import kotlinx.coroutines.flow.Flow
 
 interface CustomerRepository {
-//    fun getCurrentUserId(): String?
+    fun getCurrentUserId(): String?
     suspend fun createCustomer(
         user: FirebaseUser?,
         onSuccess: () -> Unit,

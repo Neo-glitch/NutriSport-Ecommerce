@@ -4,12 +4,13 @@ import com.neo.shared.domain.CartItem
 import com.neo.shared.domain.Customer
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
 
 class CustomerRepositoryImpl: CustomerRepository {
-//    override fun getCurrentUserId(): String? {
-//
-//    }
+    override fun getCurrentUserId(): String? {
+        return Firebase.auth.currentUser?.uid
+    }
 
     override suspend fun createCustomer(
         user: FirebaseUser?,
