@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.neo.auth.AuthScreen
 import com.neo.home.HomeGraphScreen
+import com.neo.profile.ProfileScreen
 import com.neo.shared.navigation.Screen
 
 @Composable
@@ -34,8 +35,15 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                             inclusive = true
                         }
                     }
+                },
+                navigateToProfile = {
+                    navController.navigate(Screen.Profile)
                 }
             )
+        }
+
+        composable<Screen.Profile> {
+            ProfileScreen()
         }
     }
 }
