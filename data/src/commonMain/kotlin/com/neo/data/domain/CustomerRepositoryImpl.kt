@@ -7,9 +7,12 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.coroutines.cancellation.CancellationException
 
-class CustomerRepositoryImpl: CustomerRepository {
+class CustomerRepositoryImpl : CustomerRepository {
     override fun getCurrentUserId(): String? {
         return Firebase.auth.currentUser?.uid
     }
@@ -58,14 +61,80 @@ class CustomerRepositoryImpl: CustomerRepository {
         }
     }
 
-    //
-//    override suspend fun updateCustomer(
-//        customer: Customer,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//
-//    }
+    override fun readCustomerFlow(): Flow<RequestState<Customer>> {
+        return channelFlow {
+            try {
+                val userId = getCurrentUserId()
+                if (userId != null) {
+                    val database = Firebase.firestore
+                    val customerCollection = database.collection(collectionPath = "customers")
+                    customerCollection.document(userId).snapshots.collectLatest { document ->
+                        if (document.exists) {
+                            val customer = Customer(
+                                id = document.id,
+                                firstName = document.get(field = "firstName"),
+                                lastName = document.get(field = "lastName"),
+                                email = document.get(field = "email"),
+                                city = document.get(field = "city"),
+                                postalCode = document.get(field = "postalCode"),
+                                address = document.get(field = "address"),
+                                phoneNumber = document.get(field = "phoneNumber"),
+                                cart = document.get(field = "cart"),
+                            )
+                            send(RequestState.Success(data = customer))
+                        } else {
+                            send(RequestState.Error("Customer document does not exist."))
+                        }
+                    }
+
+                } else {
+                    send(RequestState.Error("User is not authenticated."))
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                send(RequestState.Error("Error while reading customer information: ${e.message}"))
+
+            }
+        }
+    }
+
+
+    override suspend fun updateCustomer(
+        customer: Customer,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+
+        try {
+            val userId = getCurrentUserId()
+            if (userId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customers")
+
+                val existingCustomer = customerCollection.document(customer.id).get()
+
+                if (existingCustomer.exists) {
+                    customerCollection.document(customer.id)
+                        .update(
+                            "firstName" to customer.firstName,
+                            "lastName" to customer.lastName,
+                            "city" to customer.city,
+                            "postalCode" to customer.postalCode,
+                            "address" to customer.address,
+                            "phoneNumber" to customer.phoneNumber
+                        )
+                    onSuccess()
+                } else {
+                    onError("Customer not found.")
+                }
+            } else {
+                onError("User is not authenticated.")
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            onError("Error while updating customer information: ${e.message}")
+        }
+    }
 //
 //    override suspend fun addItemToCard(
 //        cartItem: CartItem,

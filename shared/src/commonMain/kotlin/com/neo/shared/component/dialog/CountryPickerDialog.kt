@@ -52,6 +52,8 @@ import com.neo.shared.TextSecondary
 import com.neo.shared.component.CustomTextField
 import com.neo.shared.component.ErrorCard
 import com.neo.shared.domain.Country
+import nutrisport.shared.generated.resources.Res
+import nutrisport.shared.generated.resources.check
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -223,7 +225,7 @@ private fun Selector(
         ) {
             Icon(
                 modifier = Modifier.size(14.dp),
-                painter = painterResource(Resources.Icon.Checkmark),
+                painter = painterResource(Res.drawable.check),
                 contentDescription = "Checkmark icon",
                 tint = IconWhite
             )
