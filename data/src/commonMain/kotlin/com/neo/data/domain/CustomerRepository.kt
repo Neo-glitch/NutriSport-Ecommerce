@@ -14,12 +14,12 @@ interface CustomerRepository {
         onError: (String) -> Unit,
     )
 
-//    fun readCustomerFlow(): Flow<RequestState<Customer>>
-//    suspend fun updateCustomer(
-//        customer: Customer,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    )
+    fun readCustomerFlow(): Flow<RequestState<Customer>>
+    suspend fun updateCustomer(
+        customer: Customer,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    )
 //
 //    suspend fun addItemToCard(
 //        cartItem: CartItem,
