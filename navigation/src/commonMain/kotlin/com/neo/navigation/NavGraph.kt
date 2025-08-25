@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.neo.admin_panel.AdminPanelScreen
 import com.neo.auth.AuthScreen
 import com.neo.home.HomeGraphScreen
+import com.neo.manage_product.ManageProductScreen
 import com.neo.profile.ProfileScreen
 import com.neo.shared.navigation.Screen
 
@@ -60,7 +62,17 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                     navController.navigateUp()
                 },
                 navigateToManageProduct = { id ->
-//                    navController.navigate(Screen.ManageProduct(id = id))
+                    navController.navigate(Screen.ManageProduct(id = id))
+                }
+            )
+        }
+
+        composable<Screen.ManageProduct> {
+            val id = it.toRoute<Screen.ManageProduct>().id
+            ManageProductScreen(
+                id = id,
+                navigateBack = {
+                    navController.navigateUp()
                 }
             )
         }
