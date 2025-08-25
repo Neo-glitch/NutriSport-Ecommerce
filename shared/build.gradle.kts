@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.serialization)
+            implementation(libs.coil3.compose)
         }
     }
 }

@@ -64,7 +64,8 @@ import rememberMessageBarState
 @Composable
 fun HomeGraphScreen(
     navigateToAuth: () -> Unit,
-    navigateToProfile: () -> Unit
+    navigateToProfile: () -> Unit,
+    navigateToAdminPanel: () -> Unit
 ) {
 
     val navController = rememberNavController()
@@ -123,7 +124,9 @@ fun HomeGraphScreen(
                     }
                 )
             },
-            onAdminClick = { }
+            onAdminClick = {
+                navigateToAdminPanel()
+            }
         )
         Scaffold(
             modifier = Modifier.fillMaxSize()

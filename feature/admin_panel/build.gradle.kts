@@ -13,7 +13,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
 
@@ -23,12 +23,14 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "data"
+            baseName = "admin_panel"
             isStatic = true
         }
     }
 
+
     sourceSets {
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -38,16 +40,17 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.firebase.firestore)
-            implementation(libs.auth.firebase.kmp)
-            implementation(libs.firebase.storage)
+            implementation(libs.messagebar.kmp)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(project(path = ":shared"))
+            implementation(project(path = ":data"))
         }
     }
 }
 
 android {
-    namespace = "com.neo.data"
+    namespace = "com.neo.admin_panel"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -56,8 +59,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 

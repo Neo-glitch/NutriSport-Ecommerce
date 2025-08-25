@@ -1,6 +1,6 @@
-package com.neo.data.domain
+package com.neo.data
 
-import com.neo.shared.domain.CartItem
+import com.neo.data.domain.CustomerRepository
 import com.neo.shared.domain.Customer
 import com.neo.shared.util.RequestState
 import dev.gitlive.firebase.Firebase
