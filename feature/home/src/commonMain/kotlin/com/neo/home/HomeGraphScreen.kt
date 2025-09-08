@@ -45,6 +45,7 @@ import com.neo.home.domain.BottomBarDestination
 import com.neo.home.domain.CustomDrawerState
 import com.neo.home.domain.isOpen
 import com.neo.home.domain.opposite
+import com.neo.products_overview.ProductsOverviewScreen
 import com.neo.shared.Alpha
 import com.neo.shared.BebasNeueFont
 import com.neo.shared.FontSize
@@ -66,6 +67,7 @@ import rememberMessageBarState
 fun HomeGraphScreen(
     navigateToAuth: () -> Unit,
     navigateToProfile: () -> Unit,
+    navigateToDetails: (String) -> Unit,
     navigateToAdminPanel: () -> Unit
 ) {
 
@@ -209,7 +211,11 @@ fun HomeGraphScreen(
                         navController = navController,
                         startDestination = Screen.ProductsOverview
                     ) {
-                        composable<Screen.ProductsOverview> { }
+                        composable<Screen.ProductsOverview> {
+                            ProductsOverviewScreen { id ->
+                                navigateToDetails(id)
+                            }
+                        }
                         composable<Screen.Cart> { }
                         composable<Screen.Categories> { }
                     }

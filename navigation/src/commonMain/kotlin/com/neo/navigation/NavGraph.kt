@@ -44,8 +44,19 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                 },
                 navigateToAdminPanel = {
                     navController.navigate(Screen.AdminPanel)
+                },
+                navigateToDetails = {
+                    navController.navigate(Screen.Details(it))
                 }
             )
+        }
+
+        composable<Screen.Details> {
+//            DetailsScreen(
+//                navigateBack = {
+//                    navController.navigateUp()
+//                }
+//            )
         }
 
         composable<Screen.Profile> {
