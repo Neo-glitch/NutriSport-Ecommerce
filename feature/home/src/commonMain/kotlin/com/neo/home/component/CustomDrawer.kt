@@ -18,6 +18,8 @@ import com.neo.shared.BebasNeueFont
 import com.neo.shared.FontSize
 import com.neo.shared.TextPrimary
 import com.neo.shared.TextSecondary
+import com.neo.shared.domain.Customer
+import com.neo.shared.util.RequestState
 
 @Composable
 fun CustomDrawer(
@@ -26,7 +28,8 @@ fun CustomDrawer(
     onLocationsClick: () -> Unit,
     onContactUsClick: () -> Unit,
     onSignOutClick: () -> Unit,
-    onAdminClick: () -> Unit
+    onAdminClick: () -> Unit,
+    customer: RequestState<Customer>
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(0.6f).fillMaxHeight()
@@ -67,10 +70,14 @@ fun CustomDrawer(
             Spacer(modifier = Modifier.height(12.dp))
         }
         Spacer(modifier = Modifier.weight(1f))
-        DrawerItemCard(
-            drawerItem = DrawerItem.Admin,
-            onClick = onAdminClick
-        )
+        AnimatedContent(targetState = customer) { customerState ->
+            if (customerState.isSuccess() && customerState.getSuccessData().isAdmin) {
+                DrawerItemCard(
+                    drawerItem = DrawerItem.Admin,
+                    onClick = onAdminClick
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
