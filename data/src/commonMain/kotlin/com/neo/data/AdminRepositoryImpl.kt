@@ -151,6 +151,13 @@ class AdminRepositoryImpl : AdminRepository {
         }
     }
 
+    /**
+     * handles get the directory of the thumbnail in firebaseStorage from the product download url
+     *
+     * from This -> https://firebasestorage.googleapis.com/v0/b/elegant-tide-466715-m1.firebasestorage.app/o/images%2F3f9fb3a1270347c8815f109c56177bf5?alt=media&token=6c7101db-fc63-4437-b699-2588ac3ae9cd
+     *
+     * to this -> images/3f9fb3a1270347c8815f109c56177bf5
+     */
     private fun extractFirebaseStoragePath(downloadUrl: String): String? {
         val startIndex = downloadUrl.indexOf("/o/") + 3
         if (startIndex < 3) return null
@@ -167,8 +174,8 @@ class AdminRepositoryImpl : AdminRepository {
 
     private fun decodeFirebasePath(encodedPath: String): String {
         return encodedPath
-            .replace("%2F", "/")
-            .replace("%20", " ")
+            .replace("%2F", "/") // for handling forward slash encoding
+            .replace("%20", " ") // for handling blank spaces encoding
     }
 
     override suspend fun updateProductThumbnail(
