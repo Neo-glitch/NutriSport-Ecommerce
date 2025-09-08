@@ -274,6 +274,7 @@ class AdminRepositoryImpl : AdminRepository {
                     val database = Firebase.firestore
 
 //                    val queryText = searchQuery.trim().lowercase()
+                    // "\uf8ff" = indicates startWith -> meaning query is for items that startWith queryText for querying by title in firebase
 //                    val endText = queryText + "\uf8ff"
 
                     database.collection(collectionPath = "product")

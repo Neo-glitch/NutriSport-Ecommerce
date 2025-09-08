@@ -1,6 +1,7 @@
 package com.neo.data
 
 import com.neo.data.domain.CustomerRepository
+import com.neo.shared.domain.CartItem
 import com.neo.shared.domain.Customer
 import com.neo.shared.util.RequestState
 import dev.gitlive.firebase.Firebase
@@ -20,17 +21,16 @@ class CustomerRepositoryImpl : CustomerRepository {
     override suspend fun createCustomer(
         user: FirebaseUser?,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
         try {
             if (user != null) {
-                val customerCollection = Firebase.firestore.collection(collectionPath = "customers")
-                val customerObject = Customer(
+                val customerCollection = Firebase.firestore.collection(collectionPath = "customer")
+                val customer = Customer(
                     id = user.uid,
                     firstName = user.displayName?.split(" ")?.firstOrNull() ?: "Unknown",
                     lastName = user.displayName?.split(" ")?.lastOrNull() ?: "Unknown",
                     email = user.email ?: "Unknown",
-                    cart = emptyList()
                 )
 
                 val customerExists = customerCollection.document(user.uid).get().exists
@@ -38,38 +38,39 @@ class CustomerRepositoryImpl : CustomerRepository {
                 if (customerExists) {
                     onSuccess()
                 } else {
-                    // create new customer
-                    customerCollection.document(user.uid).set(customerObject)
+                    customerCollection.document(user.uid).set(customer)
+                    customerCollection.document(user.uid)
+                        .collection("privateData")
+                        .document("role")
+                        .set(mapOf("isAdmin" to false))
                     onSuccess()
                 }
             } else {
                 onError("User is not available.")
             }
         } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            onError("Error while creating a customer: ${e.message}")
+            onError("Error while creating a Customer: ${e.message}")
         }
     }
 
-    override suspend fun signOut(): RequestState<Unit> {
-        return try {
-            Firebase.auth.signOut()
-            RequestState.Success(data = Unit)
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            RequestState.Error("Error while signing out: ${e.message}")
-        }
-    }
-
-    override fun readCustomerFlow(): Flow<RequestState<Customer>> {
-        return channelFlow {
-            try {
-                val userId = getCurrentUserId()
-                if (userId != null) {
-                    val database = Firebase.firestore
-                    val customerCollection = database.collection(collectionPath = "customers")
-                    customerCollection.document(userId).snapshots.collectLatest { document ->
+    override fun readCustomerFlow(): Flow<RequestState<Customer>> = channelFlow {
+        try {
+            val userId = getCurrentUserId()
+            if (userId != null) {
+                val database = Firebase.firestore
+                database.collection(collectionPath = "customer")
+                    .document(userId)
+                    .snapshots
+                    .collectLatest { document ->
                         if (document.exists) {
+                            // done this away to avoid user setting is Admin role, should only be done on backend or something
+                            val privateDataDocument =
+                                database.collection(collectionPath = "customer")
+                                    .document(userId)
+                                    .collection(collectionPath = "privateData")
+                                    .document("role")
+                                    .get()
+
                             val customer = Customer(
                                 id = document.id,
                                 firstName = document.get(field = "firstName"),
@@ -80,41 +81,38 @@ class CustomerRepositoryImpl : CustomerRepository {
                                 address = document.get(field = "address"),
                                 phoneNumber = document.get(field = "phoneNumber"),
                                 cart = document.get(field = "cart"),
+                                isAdmin = privateDataDocument.get(field = "isAdmin")
                             )
                             send(RequestState.Success(data = customer))
                         } else {
-                            send(RequestState.Error("Customer document does not exist."))
+                            send(RequestState.Error("Queried customer document does not exist."))
                         }
                     }
-
-                } else {
-                    send(RequestState.Error("User is not authenticated."))
-                }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                send(RequestState.Error("Error while reading customer information: ${e.message}"))
-
+            } else {
+                send(RequestState.Error("User is not available."))
             }
+        } catch (e: Exception) {
+            send(RequestState.Error("Error while reading a Customer information: ${e.message}"))
         }
     }
-
 
     override suspend fun updateCustomer(
         customer: Customer,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
     ) {
-
         try {
             val userId = getCurrentUserId()
             if (userId != null) {
-                val database = Firebase.firestore
-                val customerCollection = database.collection(collectionPath = "customers")
+                val firestore = Firebase.firestore
+                val customerCollection = firestore.collection(collectionPath = "customer")
 
-                val existingCustomer = customerCollection.document(customer.id).get()
-
+                val existingCustomer = customerCollection
+                    .document(customer.id)
+                    .get()
                 if (existingCustomer.exists) {
-                    customerCollection.document(customer.id)
+                    customerCollection
+                        .document(customer.id)
                         .update(
                             "firstName" to customer.firstName,
                             "lastName" to customer.lastName,
@@ -128,43 +126,148 @@ class CustomerRepositoryImpl : CustomerRepository {
                     onError("Customer not found.")
                 }
             } else {
-                onError("User is not authenticated.")
+                onError("User is not available.")
             }
         } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            onError("Error while updating customer information: ${e.message}")
+            onError("Error while updating a Customer information: ${e.message}")
         }
     }
-//
-//    override suspend fun addItemToCard(
-//        cartItem: CartItem,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//
-//    }
-//
-//    override suspend fun updateCartItemQuantity(
-//        id: String,
-//        quantity: Int,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//
-//    }
-//
-//    override suspend fun deleteCartItem(
-//        id: String,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//
-//    }
-//
-//    override suspend fun deleteAllCartItems(
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//
-//    }
+
+    override suspend fun addItemToCard(
+        cartItem: CartItem,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        try {
+            val currentUserId = getCurrentUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    val existingCart = existingCustomer.get<List<CartItem>>("cart")
+                    val updatedCart = existingCart + cartItem
+                    customerCollection.document(currentUserId)
+                        .set(
+                            data = mapOf("cart" to updatedCart),
+                            merge = true
+                        )
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exist.")
+                }
+            } else {
+                onError("User is not available.")
+            }
+        } catch (e: Exception) {
+            onError("Error while adding a product to cart: ${e.message}")
+        }
+    }
+
+    override suspend fun updateCartItemQuantity(
+        id: String,
+        quantity: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        try {
+            val currentUserId = getCurrentUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    val existingCart = existingCustomer.get<List<CartItem>>("cart")
+                    val updatedCart = existingCart.map { cartItem ->
+                        if (cartItem.id == id) {
+                            cartItem.copy(quantity = quantity)
+                        } else cartItem
+                    }
+                    customerCollection.document(currentUserId)
+                        .update(data = mapOf("cart" to updatedCart))
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exist.")
+                }
+            } else {
+                onError("User is not available.")
+            }
+        } catch (e: Exception) {
+            onError("Error while updating a product to cart: ${e.message}")
+        }
+    }
+
+    override suspend fun deleteCartItem(
+        id: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        try {
+            val currentUserId = getCurrentUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    val existingCart = existingCustomer.get<List<CartItem>>("cart")
+                    val updatedCart = existingCart.filterNot { it.id == id }
+                    customerCollection.document(currentUserId)
+                        .update(data = mapOf("cart" to updatedCart))
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exist.")
+                }
+            } else {
+                onError("User is not available.")
+            }
+        } catch (e: Exception) {
+            onError("Error while deleting a product from cart: ${e.message}")
+        }
+    }
+
+    override suspend fun deleteAllCartItems(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        try {
+            val currentUserId = getCurrentUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    customerCollection.document(currentUserId)
+                        .update(data = mapOf("cart" to emptyList<List<CartItem>>()))
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exist.")
+                }
+            } else {
+                onError("User is not available.")
+            }
+        } catch (e: Exception) {
+            onError("Error while deleting all products from cart: ${e.message}")
+        }
+    }
+
+    override suspend fun signOut(): RequestState<Unit> {
+        return try {
+            Firebase.auth.signOut()
+            RequestState.Success(data = Unit)
+        } catch (e: Exception) {
+            RequestState.Error("Error while signing out: ${e.message}")
+        }
+    }
 }
