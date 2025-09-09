@@ -135,6 +135,7 @@ class ProductRepositoryImpl : ProductRepository {
                     val productCollection = database.collection(collectionPath = "product")
 
                     val allProducts = mutableListOf<Product>()
+                    // chunk used since firebase doesn't support where query for more than 10 items
                     val chunks = ids.chunked(10)
 
                     chunks.forEachIndexed { index, chunk ->
