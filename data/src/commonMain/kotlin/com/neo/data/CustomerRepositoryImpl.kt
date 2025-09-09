@@ -153,7 +153,7 @@ class CustomerRepositoryImpl : CustomerRepository {
                     customerCollection.document(currentUserId)
                         .set(
                             data = mapOf("cart" to updatedCart),
-                            merge = true
+                            merge = true // to avoid overwriting all fields for this doc
                         )
                     onSuccess()
                 } else {

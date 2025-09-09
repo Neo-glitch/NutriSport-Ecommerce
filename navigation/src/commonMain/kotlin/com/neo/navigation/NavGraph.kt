@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.neo.admin_panel.AdminPanelScreen
 import com.neo.auth.AuthScreen
+import com.neo.details.DetailsScreen
 import com.neo.home.HomeGraphScreen
 import com.neo.manage_product.ManageProductScreen
 import com.neo.profile.ProfileScreen
@@ -44,6 +45,17 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                 },
                 navigateToAdminPanel = {
                     navController.navigate(Screen.AdminPanel)
+                },
+                navigateToDetails = {
+                    navController.navigate(Screen.Details(it))
+                }
+            )
+        }
+
+        composable<Screen.Details> {
+            DetailsScreen(
+                navigateBack = {
+                    navController.navigateUp()
                 }
             )
         }

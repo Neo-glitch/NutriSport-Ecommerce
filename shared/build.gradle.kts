@@ -45,6 +45,10 @@ kotlin {
             implementation(libs.coil3)
             implementation(libs.coil3.compose.core)
             implementation(libs.coil3.network.ktor)
+
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+
         }
     }
 }

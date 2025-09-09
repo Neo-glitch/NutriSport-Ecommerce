@@ -37,6 +37,7 @@ class ManageProductViewModel(
     private val adminRepository: AdminRepository,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    // savedStateHandle gets the arg sent to the manageProductsScreen screen i.e "id"
     private val productId = savedStateHandle.get<String>("id") ?: ""
 
     var screenState by mutableStateOf(ManageProductState())
