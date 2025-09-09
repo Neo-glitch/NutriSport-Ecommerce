@@ -8,6 +8,7 @@ import com.neo.data.CustomerRepositoryImpl
 import com.neo.data.ProductRepositoryImpl
 import com.neo.data.domain.AdminRepository
 import com.neo.data.domain.ProductRepository
+import com.neo.details.DetailsViewModel
 import com.neo.home.HomeGraphViewModel
 import com.neo.manage_product.ManageProductViewModel
 import com.neo.products_overview.ProductsOverviewViewModel
@@ -27,6 +28,7 @@ val sharedModule = module {
     viewModelOf(::AdminPanelViewModel)
     viewModelOf(::ManageProductViewModel)
     viewModelOf(::ProductsOverviewViewModel)
+    viewModelOf(::DetailsViewModel)
     viewModelOf(::AuthViewModel) // no need to specifically provide dependencies arg using this
 }
 
