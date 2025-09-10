@@ -40,6 +40,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.neo.cart.CartScreen
+import com.neo.categories.CategoriesScreen
 import com.neo.home.component.BottomBar
 import com.neo.home.component.CustomDrawer
 import com.neo.home.domain.BottomBarDestination
@@ -69,7 +70,8 @@ fun HomeGraphScreen(
     navigateToAuth: () -> Unit,
     navigateToProfile: () -> Unit,
     navigateToDetails: (String) -> Unit,
-    navigateToAdminPanel: () -> Unit
+    navigateToAdminPanel: () -> Unit,
+    navigateToCategorySearch: (String) -> Unit,
 ) {
 
     val navController = rememberNavController()
@@ -220,7 +222,11 @@ fun HomeGraphScreen(
                         composable<Screen.Cart> {
                             CartScreen()
                         }
-                        composable<Screen.Categories> { }
+                        composable<Screen.Categories> {
+                            CategoriesScreen(
+                                navigateToCategorySearch = navigateToCategorySearch
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))

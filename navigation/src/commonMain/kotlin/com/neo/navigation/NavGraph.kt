@@ -7,10 +7,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.neo.admin_panel.AdminPanelScreen
 import com.neo.auth.AuthScreen
+import com.neo.category_search.CategorySearchScreen
 import com.neo.details.DetailsScreen
 import com.neo.home.HomeGraphScreen
 import com.neo.manage_product.ManageProductScreen
 import com.neo.profile.ProfileScreen
+import com.neo.shared.domain.ProductCategory
 import com.neo.shared.navigation.Screen
 
 @Composable
@@ -48,12 +50,28 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                 },
                 navigateToDetails = {
                     navController.navigate(Screen.Details(it))
+                },
+                navigateToCategorySearch = {
+                    navController.navigate(Screen.CategorySearch(it))
                 }
             )
         }
 
         composable<Screen.Details> {
             DetailsScreen(
+                navigateBack = {
+                    navController.navigateUp()
+                }
+            )
+        }
+
+        composable<Screen.CategorySearch> {
+            val category = ProductCategory.valueOf(it.toRoute<Screen.CategorySearch>().category)
+            CategorySearchScreen(
+                category = category,
+                navigateToDetails = { id ->
+                    navController.navigate(Screen.Details(id))
+                },
                 navigateBack = {
                     navController.navigateUp()
                 }
