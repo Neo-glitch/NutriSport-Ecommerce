@@ -39,6 +39,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.neo.cart.CartScreen
 import com.neo.home.component.BottomBar
 import com.neo.home.component.CustomDrawer
 import com.neo.home.domain.BottomBarDestination
@@ -216,12 +217,15 @@ fun HomeGraphScreen(
                                 navigateToDetails(id)
                             }
                         }
-                        composable<Screen.Cart> { }
+                        composable<Screen.Cart> {
+                            CartScreen()
+                        }
                         composable<Screen.Categories> { }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
                     BottomBar(
+                        customer = customer,
                         modifier = Modifier.padding(all = 12.dp),
                         selected = selectedDestination,
                         onSelect = { destination ->

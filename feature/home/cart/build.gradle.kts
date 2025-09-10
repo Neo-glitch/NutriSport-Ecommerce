@@ -24,7 +24,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "details"
+            baseName = "cart"
             isStatic = true
         }
     }
@@ -55,7 +55,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.neo.details"
+    namespace = "com.neo.cart"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
