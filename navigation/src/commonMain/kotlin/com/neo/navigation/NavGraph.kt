@@ -8,9 +8,11 @@ import androidx.navigation.toRoute
 import com.neo.admin_panel.AdminPanelScreen
 import com.neo.auth.AuthScreen
 import com.neo.category_search.CategorySearchScreen
+import com.neo.checkout.CheckoutScreen
 import com.neo.details.DetailsScreen
 import com.neo.home.HomeGraphScreen
 import com.neo.manage_product.ManageProductScreen
+import com.neo.payment_completed.PaymentCompleted
 import com.neo.profile.ProfileScreen
 import com.neo.shared.domain.ProductCategory
 import com.neo.shared.navigation.Screen
@@ -53,6 +55,9 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                 },
                 navigateToCategorySearch = {
                     navController.navigate(Screen.CategorySearch(it))
+                },
+                navigateToCheckout = { totalAmount ->
+                    navController.navigate(Screen.Checkout(totalAmount))
                 }
             )
         }
@@ -103,6 +108,30 @@ fun SetupNavGraph(startDestination: Screen = Screen.Auth) {
                 id = id,
                 navigateBack = {
                     navController.navigateUp()
+                }
+            )
+        }
+
+        composable<Screen.Checkout> {
+            val totalAmount = it.toRoute<Screen.Checkout>().totalAmount
+            CheckoutScreen(
+                totalAmount = totalAmount.toDoubleOrNull() ?: 0.0,
+                navigateBack = {
+                    navController.navigateUp()
+                },
+                navigateToPaymentCompleted = { isSuccess, error ->
+                    navController.navigate(Screen.PaymentCompleted(isSuccess, error))
+                }
+            )
+        }
+        composable<Screen.PaymentCompleted> {
+            PaymentCompleted(
+                navigateBack = {
+                    navController.navigate(Screen.HomeGraph) {
+                        launchSingleTop = true
+                        // Clear backstack completely
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

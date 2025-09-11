@@ -1,19 +1,27 @@
-package com.neo.profile
+package com.neo.checkout
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neo.checkout.domain.Amount
+import com.neo.checkout.domain.PaypalApi
+import com.neo.checkout.domain.ShippingAddress
 import com.neo.data.domain.CustomerRepository
+import com.neo.data.domain.OrderRepository
+import com.neo.shared.domain.CartItem
 import com.neo.shared.domain.Country
 import com.neo.shared.domain.Customer
+import com.neo.shared.domain.Order
 import com.neo.shared.domain.PhoneNumber
 import com.neo.shared.util.RequestState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.ranges.contains
 
-data class ProfileScreenState(
+data class CheckoutScreenState(
     val id: String = "",
     val firstName: String = "",
     val lastName: String = "",
@@ -23,13 +31,17 @@ data class ProfileScreenState(
     val address: String? = null,
     val country: Country = Country.Serbia,
     val phoneNumber: PhoneNumber? = null,
+    val cart: List<CartItem> = emptyList(),
 )
 
-class ProfileViewModel(
+class CheckoutViewModel(
     private val customerRepository: CustomerRepository,
+    private val orderRepository: OrderRepository,
+    private val savedStateHandle: SavedStateHandle,
+    private val paypalApi: PaypalApi,
 ) : ViewModel() {
     var screenReady: RequestState<Unit> by mutableStateOf(RequestState.Loading)
-    var screenState: ProfileScreenState by mutableStateOf(ProfileScreenState())
+    var screenState: CheckoutScreenState by mutableStateOf(CheckoutScreenState())
         private set
 
     val isFormValid: Boolean
@@ -44,20 +56,32 @@ class ProfileViewModel(
 
     init {
         viewModelScope.launch {
+            // supposed to be a repo doing this and not the VM though
+            paypalApi.fetchAccessToken(
+                onSuccess = { token ->
+                    println("TOKEN RECEIVED: $token")
+                },
+                onError = { message ->
+                    println(message)
+                }
+            )
+        }
+        viewModelScope.launch {
             customerRepository.readCustomerFlow().collectLatest { data ->
                 if (data.isSuccess()) {
                     val fetchedCustomer = data.getSuccessData()
-                    screenState = ProfileScreenState(
+                    screenState = CheckoutScreenState(
                         id = fetchedCustomer.id,
                         firstName = fetchedCustomer.firstName,
                         lastName = fetchedCustomer.lastName,
                         email = fetchedCustomer.email,
                         city = fetchedCustomer.city,
-                        postalCode = fetchedCustomer.postalCode?.toInt(),
+                        postalCode = fetchedCustomer.postalCode,
                         address = fetchedCustomer.address,
                         phoneNumber = fetchedCustomer.phoneNumber,
                         country = Country.entries.firstOrNull { it.dialCode == fetchedCustomer.phoneNumber?.dialCode }
-                            ?: Country.Serbia
+                            ?: Country.Serbia,
+                        cart = fetchedCustomer.cart
                     )
                     screenReady = RequestState.Success(Unit)
                 } else if (data.isError()) {
@@ -105,7 +129,22 @@ class ProfileViewModel(
         )
     }
 
-    fun updateCustomer(
+    fun payOnDelivery(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        updateCustomer(
+            onSuccess = {
+                createTheOrder(
+                    onSuccess = onSuccess,
+                    onError = onError
+                )
+            },
+            onError = onError
+        )
+    }
+
+    private fun updateCustomer(
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
     ) {
@@ -127,4 +166,50 @@ class ProfileViewModel(
         }
     }
 
+    private fun createTheOrder(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            orderRepository.createTheOrder(
+                order = Order(
+                    customerId = screenState.id,
+                    items = screenState.cart,
+                    totalAmount = savedStateHandle.get<String>("totalAmount")?.toDoubleOrNull()
+                        ?: 0.0
+                ),
+                onSuccess = onSuccess,
+                onError = onError
+            )
+        }
+    }
+
+    fun payWithPayPal(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val totalAmount = savedStateHandle.get<String>("totalAmount")
+        if (totalAmount != null) {
+            viewModelScope.launch {
+                paypalApi.beginCheckout(
+                    amount = Amount(
+                        currencyCode = "USD",
+                        value = totalAmount
+                    ),
+                    fullName = "${screenState.firstName} ${screenState.lastName}",
+                    shippingAddress = ShippingAddress(
+                        addressLine1 = screenState.address ?: "Unknown address",
+                        city = screenState.city ?: "Unknown city",
+                        state = screenState.country.name,
+                        postalCode = screenState.postalCode.toString(),
+                        countryCode = screenState.country.code
+                    ),
+                    onSuccess = onSuccess,
+                    onError = onError
+                )
+            }
+        } else {
+            onError("Total amount couldn't be calculated.")
+        }
+    }
 }

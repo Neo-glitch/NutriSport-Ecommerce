@@ -13,7 +13,6 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
-// ✅ Load secrets from local.properties
 val localProps = Properties()
 val localFile = rootProject.file("local.properties")
 if (localFile.exists()) {

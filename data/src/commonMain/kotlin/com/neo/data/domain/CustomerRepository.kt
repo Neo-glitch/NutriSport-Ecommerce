@@ -20,7 +20,7 @@ interface CustomerRepository {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     )
-//
+
     suspend fun addItemToCard(
         cartItem: CartItem,
         onSuccess: () -> Unit,
@@ -44,6 +44,6 @@ interface CustomerRepository {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     )
-//
+
     suspend fun signOut(): RequestState<Unit>
 }

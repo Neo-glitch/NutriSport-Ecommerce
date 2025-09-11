@@ -49,6 +49,8 @@ kotlin {
             implementation(project(path = ":feature:admin_panel"))
             implementation(project(path = ":feature:admin_panel:manage_product"))
             implementation(project(path = ":shared"))
+            implementation(project(":feature:home:cart:checkout"))
+            implementation(project(":feature:payment_completed"))
         }
     }
 }
